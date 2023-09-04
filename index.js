@@ -7,22 +7,23 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const LiquidEngine = new Liquid({ globals: {} });
 
-const DIRECTORY = "../writer-tool/functions/prompts";
-
 class PromptManager {
   constructor() {
     this.prompts = {};
     this.partials = {};
+    this.config = {
+      sourceDirectory: "../prompts",
+    };
   }
 
-  async init() {
+  async init(config) {
+    this.config = deepMerge(this.config, config);
     await this.gatherPrompts();
     await this.gatherPartials();
-    console.log(this);
   }
 
   async gatherPrompts() {
-    const fullPath = path.join(__dirname, DIRECTORY);
+    const fullPath = path.join(__dirname, this.config.sourceDirectory);
 
     const items = await fs.promises.readdir(fullPath);
 
@@ -57,7 +58,7 @@ class PromptManager {
   }
 
   async gatherPartials() {
-    const fullPath = path.join(__dirname, DIRECTORY);
+    const fullPath = path.join(__dirname, this.config.sourceDirectory);
     try {
       const partialsModule = await import(path.join(fullPath, "partials.js"));
 
@@ -79,10 +80,17 @@ class PromptManager {
     // console.log({ variables });
     // console.log({ promptPreInjection, partials: this.partials });
 
+    const finalInputs = deepMerge(
+      { partials: this.partials },
+      { inputs: variables }
+    );
+    console.log({ finalInputs });
     const final = LiquidEngine.parseAndRenderSync(
       promptPreInjection,
-      deepMerge({ partials: this.partials }, variables)
+      finalInputs
     );
+
+    console.log({ final });
 
     // console.log({ final });
 
@@ -93,103 +101,6 @@ class PromptManager {
 const manager = new PromptManager();
 
 export default manager;
-
-// const gatherPartials = async (directoryPath, PromptManager) => {
-//   const fullPath = path.join(__dirname, directoryPath);
-//   const items = await fs.promises.readdir(fullPath);
-//   try {
-//     const partialsModule = await import(fullPath);
-//   } catch (e) {
-//     console.log("No partials file");
-//   }
-
-//   console.log("partials", items);
-
-//   for (const item of items) {
-//     const itemPath = path.join(fullPath, item);
-//     const stats = await fs.promises.stat(itemPath);
-
-//     if (stats.isFile() && item === "partials.js") {
-//       const promptModule = await import(itemPath);
-
-//       const promptsInThisModule = {
-//         ...promptModule.default,
-//         ...promptModule,
-//       };
-
-//       delete promptsInThisModule.default;
-
-//       PromptManager.prompts = {
-//         ...PromptManager.prompts,
-//         ...promptsInThisModule,
-//       };
-//     }
-//   }
-// };
-
-// const gatherPrompts = async (directoryPath, PromptManager) => {
-//   const fullPath = path.join(__dirname, directoryPath);
-
-//   const items = await fs.promises.readdir(fullPath);
-
-//   for (const item of items) {
-//     const itemPath = path.join(fullPath, item);
-//     const stats = await fs.promises.stat(itemPath);
-
-//     if (stats.isFile()) {
-//       const promptModule = await import(itemPath);
-
-//       const promptsInThisModule = {
-//         ...promptModule.default,
-//         ...promptModule,
-//       };
-
-//       delete promptsInThisModule.default;
-
-//       PromptManager.prompts = {
-//         ...PromptManager.prompts,
-//         ...promptsInThisModule,
-//       };
-//     }
-//   }
-
-//   return;
-
-//   fs.readdir(fullPath, (err, items) => {
-//     if (err) {
-//       console.error(`Error reading directory ${directoryPath}:`, err);
-//       return;
-//     }
-
-//     console.log(`Contents of directory ${directoryPath}:`);
-//     items.forEach((item) => {
-//       const itemPath = path.join(fullPath, item);
-
-//       fs.stat(itemPath, (statErr, stats) => {
-//         console.log({ stats });
-//         if (statErr) {
-//           console.error(`Error getting stats for ${item}:`, statErr);
-//           return;
-//         }
-
-//         if (stats.isFile()) {
-//           readFile(itemPath);
-//           console.log(`${item} is a file (${stats.size} bytes)`);
-//           if (item === "index.js") {
-//             console.log("INDEX");
-//             import(itemPath).then((module) => {
-//               console.log({ module }, module.default);
-//             });
-//           }
-//         } else if (stats.isDirectory()) {
-//           console.log(`${item} is a directory`);
-//         } else {
-//           console.log(`${item} is an unknown type`);
-//         }
-//       });
-//     });
-//   });
-// };
 
 function _get(object, dotNotation) {
   const keys = dotNotation.split(".");
