@@ -1,7 +1,7 @@
 {
   "name": "ai-prompt-organizer",
   "version": "0.1.1",
-  "description": "Organize your AI prompts, inject variables with Liquid template language, and more.",
+  "description": "Super simple and scalable AI prompt management tools",
   "keywords": [
     "ai",
     "prompt",

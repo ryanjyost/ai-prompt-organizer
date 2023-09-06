@@ -65,6 +65,7 @@ import PromptOrganizer from "ai-prompt-organizer"
 
 const inputs = { question: "Why do zebras have stripes?", age: 10 };
 const prompt = PromptOrganizer.get("fullPrompt", inputs)
+
 console.log(prompt)
 // Hi GPT! I have a question.
 // Why do zebras have stripes?

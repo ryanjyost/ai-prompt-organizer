@@ -17,7 +17,7 @@ class PromptManager {
 
   constructor() {
     // const src = path.join(__dirname, 'prompts', "../..");
-    const src = path.join(__dirname, '../../ai-prompt-manager-example-project/prompts');
+    const src = path.join(__dirname, 'prompts');
     this.config = {
       source: src,
       debug: true,
