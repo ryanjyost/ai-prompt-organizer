@@ -78,6 +78,12 @@ class PromptManager {
       } else if (isJsFile) {
         const promptModule = require(itemPath);
 
+        if (typeof promptModule === 'string') {
+          const prop = item.replace('.' + extension, '');
+          library[prop] = promptModule;
+          continue;
+        }
+
         const promptsInThisModule = {
           ...promptModule.default,
           ...promptModule,
@@ -98,7 +104,7 @@ class PromptManager {
   }
 
   getAllOutputsFromPrompt(rawPrompt: string) {
-    console.log({ rawPrompt });
+    rawPrompt = String(rawPrompt) || '';
     const regex = /\{\{([^}]+)\}\}/;
     const arrayOfVarNames = (rawPrompt.match(/\{\{([^}]+)\}\}/g) || []).map((match: any) => match?.match(regex)[1]);
     const obj: any = {};
@@ -138,7 +144,6 @@ class PromptManager {
     const final = LiquidEngine.parseAndRenderSync(prompt, finalInputs);
 
     this.config.debug && console.log(final);
-    console.log(final);
 
     return final; // TODO all sorts of clean up
   }
