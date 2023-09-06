@@ -112,7 +112,6 @@ class PromptManager {
   use(prompt: string, inputs: any) {
     const outputs = this.getAllOutputsFromPrompt(prompt);
     if (!outputs.length) {
-      console.log('no outputs', prompt);
       return prompt;
     }
 
@@ -123,23 +122,23 @@ class PromptManager {
       if (!outputValue) {
         continue;
       }
-      const outputValueHasOutputs = this.getAllOutputsFromPrompt(outputValue || '').length > 0;
-      console.log({ output, outputValue, outputValueHasOutputs });
 
-      if (outputValueHasOutputs) {
-        const injected = this.use(outputValue, inputs);
-        _set(finalInputs, output, injected);
-      } else if (outputValue) {
-        _set(finalInputs, output, outputValue);
-      }
+      _set(finalInputs, output, this.use(outputValue, inputs));
+
+      // const outputValueHasOutputs = this.getAllOutputsFromPrompt(outputValue || '').length > 0;
+
+      // if (outputValueHasOutputs) {
+      //   const injected = this.use(outputValue, inputs);
+      //   _set(finalInputs, output, injected);
+      // } else if (outputValue) {
+      //   _set(finalInputs, output, outputValue);
+      // }
     }
 
     const final = LiquidEngine.parseAndRenderSync(prompt, finalInputs);
 
-    console.log({ final, prompt, finalInputs });
-
-    // console.log({ finalInputs, final });
     this.config.debug && console.log(final);
+    console.log(final);
 
     return final; // TODO all sorts of clean up
   }

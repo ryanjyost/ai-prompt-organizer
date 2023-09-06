@@ -34,22 +34,23 @@ _Not sure what `.cjs` is? [Leare more here](https://codingforseo.com/blog/mjs-vs
 ```
 module.exports = {
     greetings: {
-        hello: "Hi GPT!",
-        poseQuestion: "I have a question.",
+    hello: "Hi GPT!",
+    poseQuestion: "I have a question.",
+  },
+  respondInStyle: "Write your response in the style of",
+  writingStyles: {
+    mobster: "a mobster from the 1920s",
+    celebs: {
+      misterRogers: "Mr. Rogers",
     },
-    respondInStyle: "Write your response in the style of",
-    writingStyles: {
-        mobster: "a mobster from the 1920s",
-        celebs: {
-            misterRogers: "Mr. Rogers",
-        }
-    },
-    ageAppropriate: "Make your response appripriate for someone who is {{inputs.age}} years old.",
-    fullPrompt: `
-        {{greetings.hello}} {{greetings.poseQuestion}}
-        {{inputs.question}}
-        {{respondInStyle}} {{writingStyles.celebs.misterRogers}}.
-        {{ageAppropriate}}
+  },
+  ageAppropriate:
+    "{{important}} Make your response appropriate for someone who is {{inputs.age}} years old.",
+  fullPrompt: `
+    {{greetings.hello}} {{greetings.poseQuestion}}
+    {{inputs.question}}
+    {{respondInStyle}} {{writingStyles.celebs.misterRogers}}.
+    {{ageAppropriate}}
     `
 
 }
@@ -64,7 +65,11 @@ import PromptOrganizer from "ai-prompt-organizer"
 
 const inputs = { question: "Why do zebras have stripes?", age: 10 };
 const prompt = PromptOrganizer.get("fullPrompt", inputs)
-// Output: "Hello world!"
+console.log(prompt)
+// Hi GPT! I have a question.
+// Why do zebras have stripes?
+// Write your response in the style of Mr. Rogers.
+// IMPORTANT! Make your response appropriate for someone who is 10 years old.
 ```
 
 ## Examples
