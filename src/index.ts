@@ -1,5 +1,3 @@
-import { dirname } from 'path';
-
 const path = require('path');
 const { fileURLToPath } = require('url');
 const { Liquid } = require('liquidjs');
