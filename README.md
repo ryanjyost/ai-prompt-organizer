@@ -3,14 +3,15 @@
 ### Super simple and scalable AI prompt management tools
 
 - Access prompts the same way they are organized in your folder/file system
-- Use any prompt inside of another prompt
+- Use any prompt inside of another prompt.
 - Easily add variables and logic to your prompts using [Liquid - Shopify's Template Language](https://liquidjs.com/tutorials/intro-to-liquid.html)
 
 ### Table of Contents
 
-- Quick Start
+- [Quick Start](#quick-start)
+- [Examples](#examples)
 
-## [Quick Start](#quick-start)
+## Quick Start
 
 ### 1. Install the package.
 
@@ -32,7 +33,25 @@ _Not sure what `.cjs` is? [Leare more here](https://codingforseo.com/blog/mjs-vs
 
 ```
 module.exports = {
-    hello: "Hello world!"
+    greetings: {
+        hello: "Hi GPT!",
+        poseQuestion: "I have a question.",
+    },
+    respondInStyle: "Write your response in the style of",
+    writingStyles: {
+        mobster: "a mobster from the 1920s",
+        celebs: {
+            misterRogers: "Mr. Rogers",
+        }
+    },
+    ageAppropriate: "Make your response appripriate for someone who is {{inputs.age}} years old.",
+    fullPrompt: `
+        {{greetings.hello}} {{greetings.poseQuestion}}
+        {{inputs.question}}
+        {{respondInStyle}} {{writingStyles.celebs.misterRogers}}.
+        {{ageAppropriate}}
+    `
+
 }
 ```
 
@@ -43,8 +62,14 @@ NOTE: Right now, common js modules are required to accomodate older Node project
 ```
 import PromptOrganizer from "ai-prompt-organizer"
 
-const prompt = PromptOrganizer.get("hello")
+const inputs = { question: "Why do zebras have stripes?", age: 10 };
+const prompt = PromptOrganizer.get("fullPrompt", inputs)
 // Output: "Hello world!"
 ```
 
 ## Examples
+
+```
+PromptOrganizer.get("fullPrompt");
+// "Hello World!"
+```

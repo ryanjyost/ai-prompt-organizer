@@ -20,7 +20,7 @@ class PromptManager {
     const src = path.join(__dirname, '../../ai-prompt-manager-example-project/prompts');
     this.config = {
       source: src,
-      debug: false,
+      debug: true,
     };
     this.prompts = this.gatherPrompts();
     this.partials = {};
@@ -97,15 +97,51 @@ class PromptManager {
     return library;
   }
 
-  getVariablesForInjections(rawPrompt: string) {}
+  getAllOutputsFromPrompt(rawPrompt: string) {
+    console.log({ rawPrompt });
+    const regex = /\{\{([^}]+)\}\}/;
+    const arrayOfVarNames = (rawPrompt.match(/\{\{([^}]+)\}\}/g) || []).map((match: any) => match?.match(regex)[1]);
+    const obj: any = {};
+
+    arrayOfVarNames.forEach((varName: string) => {
+      obj[varName] = true;
+    });
+    return Object.keys(obj);
+  }
 
   use(prompt: string, inputs: any) {
-    const finalInputs = deepMerge(this.prompts, { inputs });
+    const outputs = this.getAllOutputsFromPrompt(prompt);
+    if (!outputs.length) {
+      console.log('no outputs', prompt);
+      return prompt;
+    }
+
+    const finalInputs = { inputs };
+
+    for (const output of outputs) {
+      const outputValue = _get(this.prompts, output);
+      if (!outputValue) {
+        continue;
+      }
+      const outputValueHasOutputs = this.getAllOutputsFromPrompt(outputValue || '').length > 0;
+      console.log({ output, outputValue, outputValueHasOutputs });
+
+      if (outputValueHasOutputs) {
+        const injected = this.use(outputValue, inputs);
+        _set(finalInputs, output, injected);
+      } else if (outputValue) {
+        _set(finalInputs, output, outputValue);
+      }
+    }
+
     const final = LiquidEngine.parseAndRenderSync(prompt, finalInputs);
 
-    this.config.debug && console.log(final.trim());
+    console.log({ final, prompt, finalInputs });
 
-    return final.trim();
+    // console.log({ finalInputs, final });
+    this.config.debug && console.log(final);
+
+    return final; // TODO all sorts of clean up
   }
 
   // TODO only pass in the inputs that are needed
