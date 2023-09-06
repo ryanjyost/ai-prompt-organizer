@@ -1,10 +1,14 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import { Liquid } from "liquidjs";
+const fs = require("fs");
+const path = require("path");
+const { fileURLToPath } = require("url");
+const { Liquid } = require("liquidjs");
+const { globSync } = require("glob");
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+console.log("PromptManager");
+// TODO https://stackoverflow.com/questions/29738381/how-to-publish-a-module-written-in-es6-to-npm
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 const LiquidEngine = new Liquid({ globals: {} });
 
 class PromptManager {
@@ -12,28 +16,66 @@ class PromptManager {
     this.prompts = {};
     this.partials = {};
     this.config = {
-      sourceDirectory: "../prompts",
+      source: path.join(__dirname, "prompts"),
+      debug: false,
     };
   }
 
-  async init(config) {
-    this.config = deepMerge(this.config, config);
-    await this.gatherPrompts();
-    await this.gatherPartials();
+  logPrompts(obj, depth = 0) {
+    // console.log("GOT PROMPTS", this.prompts);
+
+    const indent = "  ".repeat(depth);
+
+    // Iterate through object properties
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const value = obj[key];
+
+        // Check if the value is an object (nested)
+        if (typeof value === "object" && value !== null) {
+          console.log(`\n${indent}📁${key}`);
+          this.logPrompts(value, depth + 1); // Recursively log nested objects
+        } else {
+          console.log("")
+          console.log(`${indent}${key}`);
+          console.log(`${indent}"${value}"`);
+        }
+      }
+    }
   }
 
-  async gatherPrompts() {
-    const fullPath = path.join(__dirname, this.config.sourceDirectory);
+  init(config) {
+    this.config = deepMerge(this.config, config || {});
+    this.gatherPrompts();
+    if (this.config.debug) {
+      console.log("*****", "PROMPT LIBRARY", "*****");
+      this.logPrompts(this.prompts);
+      console.log("\n*****", "PARTIALS", "*****");
+      this.logPrompts(this.partials);
+    }
+  }
 
-    const items = await fs.promises.readdir(fullPath);
+  gatherPrompts() {
+    const fullPath = this.config.source;
+
+    // const items = await fs.promises.readdir(fullPath);
+    const items = globSync("**/*.js", {
+      cwd: fullPath,
+      ignore: "node_modules/**",
+    });
 
     for (const item of items) {
       const itemPath = path.join(fullPath, item);
-      const stats = await fs.promises.stat(itemPath);
+      // const stats = await fs.promises.stat(itemPath);
       const isIndex = item === "index.js";
+      const isPartials = item === "partials.js";
+      const isJsFile = item.endsWith(".js");
+      const isDirectory = !item.includes(".");
 
-      if (stats.isFile()) {
-        const promptModule = await import(itemPath);
+      console.log({ item, isIndex, isPartials, isJsFile, isDirectory });
+
+      if (isJsFile) {
+        const promptModule = require(itemPath);
 
         const promptsInThisModule = {
           ...promptModule.default,
@@ -44,6 +86,8 @@ class PromptManager {
 
         if (isIndex) {
           this.prompts = deepMerge(this.prompts, promptsInThisModule);
+        } else if (isPartials) {
+          this.partials = deepMerge(this.partials, promptsInThisModule);
         } else {
           const prop = item.replace(".js", "");
           this.prompts[prop] = deepMerge(
@@ -57,23 +101,23 @@ class PromptManager {
     return;
   }
 
-  async gatherPartials() {
-    const fullPath = path.join(__dirname, this.config.sourceDirectory);
-    try {
-      const partialsModule = await import(path.join(fullPath, "partials.js"));
+  // async gatherPartials() {
+  //   const fullPath = this.config.source;
+  //   try {
+  //     const partialsModule = await import(path.join(fullPath, "partials.js"));
 
-      const partialsInThisModule = deepMerge(
-        { ...partialsModule.default },
-        { ...partialsModule }
-      );
+  //     const partialsInThisModule = deepMerge(
+  //       { ...partialsModule.default },
+  //       { ...partialsModule }
+  //     );
 
-      delete partialsInThisModule.default;
+  //     delete partialsInThisModule.default;
 
-      this.partials = deepMerge(this.partials || {}, partialsModule);
-    } catch (e) {
-      console.log("No partials file");
-    }
-  }
+  //     this.partials = deepMerge(this.partials || {}, partialsModule);
+  //   } catch (e) {
+  //     console.log("No partials file");
+  //   }
+  // }
 
   getPrompt(promptPath, variables) {
     const promptPreInjection = _get(this.prompts, promptPath) || "";
@@ -100,7 +144,9 @@ class PromptManager {
 
 const manager = new PromptManager();
 
-export default manager;
+module.exports = manager;
+
+function logObject(obj) {}
 
 function _get(object, dotNotation) {
   const keys = dotNotation.split(".");
