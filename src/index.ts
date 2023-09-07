@@ -125,6 +125,12 @@ class PromptManager {
 
     for (const output of outputs) {
       const outputValue = _get(this.prompts, output);
+      console.log({
+        test: _get(this.prompts, 'superNestedObjectOfPrompts.top'),
+        prompts: this.prompts,
+        output,
+        outputValue,
+      });
       if (!outputValue) {
         continue;
       }
