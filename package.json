@@ -1,6 +1,6 @@
 {
   "name": "ai-prompt-organizer",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Super simple and scalable AI prompt management tools",
   "keywords": [
     "ai",
@@ -27,7 +27,7 @@
   },
   "scripts": {
     "dev": "tsc-watch",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json",
     "build": "tsc",
     "test": "jest --config jestconfig.json",
