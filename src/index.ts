@@ -24,6 +24,8 @@ class PromptManager {
     };
     this.prompts = this.gatherPrompts();
     this.partials = {};
+
+    this.config.debug && console.log('__dirname', __dirname, 'src', src);
   }
 
   logPrompts(obj: any, depth = 0) {
