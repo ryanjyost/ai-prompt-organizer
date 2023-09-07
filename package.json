@@ -17,13 +17,13 @@
   "files": [
     "lib/**/*"
   ],
-  "homepage": "https://github.com/ryanjyost/ai-prompt-manager#readme",
+  "homepage": "https://github.com/ryanjyost/ai-prompt-organizer#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ryanjyost/ai-prompt-manager.git"
+    "url": "git+https://github.com/ryanjyost/ai-prompt-organizer.git"
   },
   "bugs": {
-    "url": "https://github.com/ryanjyost/ai-prompt-manager/issues"
+    "url": "https://github.com/ryanjyost/ai-prompt-organizer/issues"
   },
   "scripts": {
     "dev": "tsc-watch",
