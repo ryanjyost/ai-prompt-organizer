@@ -13,8 +13,8 @@
 - [How to organize and use your prompts + examples](#how-it-works)
 - [Input variables + examples](#input-variables)
 - [Use prompts in other prompts + examples](#use-prompts-in-other-prompts)
+- [API Reference](api-reference)
 - [TODO List](todo-list)
-
 
 ## Quick Start
 
@@ -167,7 +167,9 @@ PromptOrganizer.get("superLongPrompt")
 //
 // So you may want a whole file dedicated to just this prompt."
 ```
+
 ## Input variables
+
 Provide prompts with inputs in order to inject dynamic data into the text.
 
 ```
@@ -214,11 +216,52 @@ const prompt2 = "{{prompt1}} and {{prompt3}}"
 const prompt3 = "{{prompt1}} and {{prompt2}}"
 ```
 
+## API Reference
+
+### PromptOrganizer
+
+**.init(config: { source?: string, debug?: boolean })**<br>
+Pass a config to customize behavior
+
+```
+PromptOrganizer.init({
+  source: path.join(__dirname, "customPromptLibraryRoot"),
+  debug: true
+})
+```
+<br>
+<br>
+
+**.get(promptKey: string, inputs?: object)**<br>
+Get a prompt by it's reference key and pass in optional inputs.
+
+```
+PromptOrganizer.get("some.prompt.uses.input", { user: "Ryan" })
+```
+<br>
+<br>
+
+**.use(prompt: string, inputs?: object)**<br>
+Use a custom prompt directly and pass in optional inputs.
+
+```
+PromptOrganizer.use("My name is {{name}}", { name: "Ryan" })
+```
+<br>
+<br>
+
+**.logPrompts()**<br>
+View your prompts in structured output for debugging purposes.
+
+```
+PromptOrganizer.logPrompts()
+```
+<br>
+<br>
+
 ## TODO List
+
 This is a super young package, so lots to improve on. Open an issue with suggestions!
 
 - `this` within the same file
 - Use of es6 modules
-
-
-

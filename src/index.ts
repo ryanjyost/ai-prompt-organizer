@@ -18,12 +18,11 @@ class PromptManager {
   constructor() {
     // const src = path.join(__dirname, 'prompts', "../..");
     const src = path.join(__dirname, '../../..', 'prompts');
-    console.log('__dirname', __dirname, 'src', src);
     this.config = {
       source: src,
-      debug: true,
+      debug: false,
     };
-    this.prompts = this.gatherPrompts();
+    this.prompts = this._gatherPrompts();
     this.partials = {};
 
     this.config.debug && console.log('__dirname', __dirname, 'src', src);
@@ -48,7 +47,7 @@ class PromptManager {
 
   init(config: IPromptManagerConfig) {
     this.config = deepMerge(this.config, config || {});
-    this.prompts = this.gatherPrompts();
+    this.prompts = this._gatherPrompts();
 
     if (this.config.debug) {
       console.log('***** Config *****\n');
@@ -58,7 +57,7 @@ class PromptManager {
     }
   }
 
-  gatherPrompts(dirPath?: string, prefix?: string) {
+  _gatherPrompts(dirPath?: string, prefix?: string) {
     const fullPath = dirPath || this.config.source;
 
     const items = globSync('**/*.{js,cjs}', {
@@ -77,7 +76,7 @@ class PromptManager {
 
       if (isDirectory) {
         const dirName = item.split('/')[0];
-        library[dirName] = deepMerge(library[dirName], this.gatherPrompts(path.join(fullPath, dirName), dirName));
+        library[dirName] = deepMerge(library[dirName], this._gatherPrompts(path.join(fullPath, dirName), dirName));
       } else if (isJsFile) {
         const promptModule = require(itemPath);
 
@@ -106,7 +105,7 @@ class PromptManager {
     return library;
   }
 
-  getAllOutputsFromPrompt(rawPrompt: string) {
+  _getAllOutputsFromPrompt(rawPrompt: string) {
     rawPrompt = String(rawPrompt) || '';
     const regex = /\{\{([^}]+)\}\}/;
     const arrayOfVarNames = (rawPrompt.match(/\{\{([^}]+)\}\}/g) || []).map((match: any) => match?.match(regex)[1]);
@@ -118,36 +117,22 @@ class PromptManager {
     return Object.keys(obj);
   }
 
-  use(prompt: string, inputs: any) {
-    const outputs = this.getAllOutputsFromPrompt(prompt);
+  use(prompt: string, inputs?: any) {
+    const outputs = this._getAllOutputsFromPrompt(prompt);
     if (!outputs.length) {
       return prompt;
     }
 
-    const finalInputs = { inputs };
+    const finalInputs = inputs ? { inputs } : {};
 
     for (const output of outputs) {
       const outputValue = _get(this.prompts, output);
-      console.log({
-        test: _get(this.prompts, 'superNestedObjectOfPrompts.top'),
-        prompts: this.prompts,
-        output,
-        outputValue,
-      });
+
       if (!outputValue) {
         continue;
       }
 
       _set(finalInputs, output, this.use(outputValue, inputs));
-
-      // const outputValueHasOutputs = this.getAllOutputsFromPrompt(outputValue || '').length > 0;
-
-      // if (outputValueHasOutputs) {
-      //   const injected = this.use(outputValue, inputs);
-      //   _set(finalInputs, output, injected);
-      // } else if (outputValue) {
-      //   _set(finalInputs, output, outputValue);
-      // }
     }
 
     const final = LiquidEngine.parseAndRenderSync(prompt, finalInputs);
@@ -157,8 +142,7 @@ class PromptManager {
     return final; // TODO all sorts of clean up
   }
 
-  // TODO only pass in the inputs that are needed
-  get(promptPath: string, inputs: any) {
+  get(promptPath: string, inputs?: any) {
     const promptPreInjection = _get(this.prompts, promptPath) || '';
     return this.use(promptPreInjection, inputs);
   }
