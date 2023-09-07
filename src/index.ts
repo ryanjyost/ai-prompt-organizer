@@ -17,7 +17,7 @@ class PromptManager {
 
   constructor() {
     // const src = path.join(__dirname, 'prompts', "../..");
-    const src = path.join(__dirname, 'prompts', '../../..');
+    const src = path.join(__dirname, '../../../..', 'prompts');
     console.log('__dirname', __dirname, 'src', src);
     this.config = {
       source: src,
