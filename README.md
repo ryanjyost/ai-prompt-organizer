@@ -4,7 +4,7 @@
 
 - Access prompts the same way they are organized in your folder/file system
 - Use any prompt inside of another prompt
-- Avoid bloating your code files with blocks of prompt text.
+- Avoid bloating your code files with blocks of prompt text (separation of concerns)
 - Easily add variables and logic to your prompts using [Liquid - Shopify's Template Language](https://liquidjs.com/tutorials/intro-to-liquid.html)
 
 ### Table of Contents
@@ -32,7 +32,7 @@ cd prompts
 touch index.cjs
 ```
 
-_Not sure what `.cjs` is? [Leare more here](https://codingforseo.com/blog/mjs-vs-cjs-files/)_
+_Not sure what `.cjs` is? [Learn more here](https://codingforseo.com/blog/mjs-vs-cjs-files/)_
 
 ### 3. In `index.cjs`, default export an object of prompts.
 
@@ -219,7 +219,8 @@ const prompt3 = "{{prompt1}} and {{prompt2}}"
 ## API Reference
 
 ### PromptOrganizer
-
+<br>
+<br>
 **.init(config: { source?: string, debug?: boolean })**<br>
 Pass a config to customize behavior
 
