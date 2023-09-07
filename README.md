@@ -4,12 +4,16 @@
 
 - Access prompts the same way they are organized in your folder/file system
 - Use any prompt inside of another prompt
+- Avoid bloating your code files with blocks of prompt text.
 - Easily add variables and logic to your prompts using [Liquid - Shopify's Template Language](https://liquidjs.com/tutorials/intro-to-liquid.html)
 
 ### Table of Contents
 
 - [Quick Start](#quick-start)
-- [How it works + examples](#how-it-works)
+- [How to organize and use your prompts + examples](#how-it-works)
+- [Input variables + examples](#input-variables)
+- [Use prompts in other prompts + examples](#use-prompts-in-other-prompts)
+
 
 ## Quick Start
 
@@ -33,19 +37,23 @@ _Not sure what `.cjs` is? [Leare more here](https://codingforseo.com/blog/mjs-vs
 
 ```
 module.exports = {
-    greetings: {
+  greetings: {
     hello: "Hi GPT!",
     poseQuestion: "I have a question.",
   },
+
   respondInStyle: "Write your response in the style of",
+
   writingStyles: {
     mobster: "a mobster from the 1920s",
     celebs: {
       misterRogers: "Mr. Rogers",
     },
   },
+
   ageAppropriate:
     "{{important}} Make your response appropriate for someone who is {{inputs.age}} years old.",
+
   fullPrompt: `
     {{greetings.hello}} {{greetings.poseQuestion}}
     {{inputs.question}}
@@ -76,12 +84,14 @@ console.log(prompt)
 ## How it works
 
 ### File/Module Organization === Prompt Organization
-Your prompt library is a directory comprised of other directories and `.cjs` files. 
+
+Your prompt library is a directory comprised of other directories and `.cjs` files.
+
 ```
 /prompts
   index.cjs
-  constants.cjs 
   superLongPrompt.cjs
+  constants.cjs
   /constants <-- Will merge with constants.cjs
     math.cjs
   /formats
@@ -92,10 +102,13 @@ Your prompt library is a directory comprised of other directories and `.cjs` fil
       listsOfText.cjs
 
 ```
+
 ### Prompt files have flexible export options
-*Currently limited to common/es5 module export system.*
+
+_Currently limited to common/es5 module export system._
 
 #### 1. Default export an object of prompts
+
 ```
 <-- prompts/constants.cjs -->
 
@@ -113,13 +126,16 @@ module.exports = {
 ```
 
 #### 2. Export prompts as named exports
+
 ```
 <-- prompts/constants/math.cjs -->
 
 module.exports.pi = Math.PI.toFixed(2)
 
 ```
+
 #### 3. Export just the prompt
+
 ```
 <-- prompts/superLongPrompt.cjs -->
 
@@ -133,7 +149,7 @@ module.exports = `
 
 ### Your file and object/export structures determine how you access your prompts.
 
-Using the `constants` example above...
+Using the file examples above...
 
 ```
 PromptOrganizer.get("constants.defaultLanguage")
@@ -150,12 +166,53 @@ PromptOrganizer.get("superLongPrompt")
 //
 // So you may want a whole file dedicated to just this prompt."
 ```
-
-## Examples
-
-### 
+## Input variables
+Provide prompts with inputs in order to inject dynamic data into the text.
 
 ```
-PromptOrganizer.get("fullPrompt");
-// "Hello World!"
+const prompt = `I have a new question: {{inputs.question}}`
+
+PromptOrganizer.use(prompt, {
+  question: "How do I use ai-prompt-organizer?"
+})
+// "I have a new question: How do I use ai-prompt-organizer?"
 ```
+
+## Use prompts in other prompts
+
+Any prompt can reference any other prompt, regardless of where it's located in your prompt library.
+
+BUT, be careful of circular dependencies!!!!
+
+```
+<-- prompts/index.cjs -->
+
+const promptA = "This is a prompt with {{superNestedObjectOfPrompts.top.middle.bottom.deepPrompt}}"
+const promptB = "This is prompt b"
+
+const superNestedObjectOfPrompts = {
+  top: {
+    middle: {
+      bottom: {
+        deepPrompt: "This is a deep prompt with {{promptB}}"
+      }
+    }
+  }
+}
+
+module.exports = {
+  promptA,
+  promptB,
+  superNestedObjectOfPrompts
+}
+
+// WARNING - THESE ARE CIRCULAR DEPENDENCIES
+// They will result in blank strings
+const prompt1 = "{{prompt2}} and {{prompt3}}"
+const prompt2 = "{{prompt1}} and {{prompt3}}"
+const prompt3 = "{{prompt1}} and {{prompt2}}"
+```
+
+
+
+
