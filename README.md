@@ -6,6 +6,7 @@
 - Use any prompt inside of another prompt
 - Avoid bloating your code files with blocks of prompt text (separation of concerns)
 - Easily add variables and logic to your prompts using [Liquid - Shopify's Template Language](https://liquidjs.com/tutorials/intro-to-liquid.html)
+- Check out the [example project](https://github.com/ryanjyost/ai-prompt-organizer-example-project)
 
 ### Table of Contents
 
