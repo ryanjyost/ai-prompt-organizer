@@ -16,6 +16,7 @@ class PromptManager {
   config: IPromptManagerConfig;
 
   constructor() {
+    console.log('WORKING');
     // const src = path.join(__dirname, 'prompts', "../..");
     const src = path.join(__dirname, '../../..', 'prompts');
     this.config = {
@@ -57,8 +58,9 @@ class PromptManager {
     }
   }
 
-  _gatherPrompts(dirPath?: string, prefix?: string) {
+  _gatherPrompts(dirPath?: string, prefix?: string, prevLevels?: string[]) {
     const fullPath = dirPath || this.config.source;
+    let levels: string[] = [...(prevLevels || [])];
 
     const items = globSync('**/*.{js,cjs}', {
       cwd: fullPath,
@@ -76,7 +78,9 @@ class PromptManager {
 
       if (isDirectory) {
         const dirName = item.split('/')[0];
-        library[dirName] = deepMerge(library[dirName], this._gatherPrompts(path.join(fullPath, dirName), dirName));
+        levels.push(dirName);
+        const value = this._gatherPrompts(path.join(fullPath, dirName), dirName, levels);
+        _set(library, dirName, value);
       } else if (isJsFile) {
         const promptModule = require(itemPath);
 
@@ -91,13 +95,22 @@ class PromptManager {
           ...promptModule,
         };
 
+        if (
+          itemPath ===
+          '/Users/ryanjyost/Projects/ai-prompt-organizer-tutorial/prompts/folderA/folderB/folderC/nestedFile.cjs'
+        ) {
+          console.log({ promptsInThisModule });
+        }
+
         delete promptsInThisModule.default;
 
         if (isIndex) {
           library = deepMerge(library, promptsInThisModule);
         } else {
           const prop = item.replace('.' + extension, '');
+          console.log({ prop });
           library[prop] = deepMerge(library[prop] || {}, promptsInThisModule);
+          console.log({ library });
         }
       }
     }
@@ -154,31 +167,40 @@ module.exports = manager;
 
 function _get(object: any, dotNotation: string) {
   const keys = (dotNotation || '').split('.');
-  let currentObj = object;
+  let currentObj = object || {};
 
   for (const key of keys) {
     if (!currentObj.hasOwnProperty(key)) {
       return undefined;
     }
-    currentObj = currentObj[key];
+    // console.log(JSON.stringify({ currentObj }));
+
+    currentObj = currentObj[key] || {};
   }
 
   return currentObj;
 }
 
-function _set(object: any, dotNotation: string, value: any) {
+function _set(obj: any, dotNotation: string, value: any) {
   const keys = dotNotation.split('.');
-  let currentObj = object;
+  let currentObj = obj;
 
-  for (let i = 0; i < keys.length - 1; i++) {
-    const key = keys[i];
-    if (!currentObj.hasOwnProperty(key)) {
-      currentObj[key] = {};
+  function recursiveSet(obj: any, keys: any[], value: any, index = 0) {
+    const key = keys[index];
+
+    if (index === keys.length - 1) {
+      obj[key] = value;
+    } else {
+      if (!obj[key] || typeof obj[key] !== 'object') {
+        obj[key] = {};
+      }
+      recursiveSet(obj[key], keys, value, index + 1);
     }
-    currentObj = currentObj[key];
   }
 
-  currentObj[keys[keys.length - 1]] = value;
+  recursiveSet(currentObj, keys, value);
+
+  return obj;
 }
 
 function deepMerge(target: any, ...sources: any) {
