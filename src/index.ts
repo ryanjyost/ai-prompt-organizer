@@ -60,7 +60,7 @@ class PromptManager {
 
   _gatherPrompts(dirPath?: string, prefix?: string, prevLevels?: string[]) {
     const fullPath = dirPath || this.config.source;
-    let levels: string[] = [...(prevLevels || [])];
+    const levels: string[] = [...(prevLevels || [])];
 
     const items = globSync('**/*.{js,cjs}', {
       cwd: fullPath,
@@ -183,7 +183,7 @@ function _get(object: any, dotNotation: string) {
 
 function _set(obj: any, dotNotation: string, value: any) {
   const keys = dotNotation.split('.');
-  let currentObj = obj;
+  const currentObj = obj;
 
   function recursiveSet(obj: any, keys: any[], value: any, index = 0) {
     const key = keys[index];
